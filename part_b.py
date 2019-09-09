@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
+# from sklearn.model_selection import train_test_split
 from scipy.io import loadmat
 from scipy.special import expit
 import urllib
@@ -13,10 +13,12 @@ class LogisticRegressionAlgorithm(object):
     def __init__(self, inputs, labels, learning_rate=.1, itertions=20000, test_amount=10000):
         # scaling input to fit best to the model
         self.inputs = self.prepare_input(inputs)  # flattened data with the beginning, size inputs (number of images, 784)
+        # for i in range(50000, 50020):
+        #     self.plot_image(image_number=i, inputs=self.inputs)
         self.labels = labels
 
         # split the data to train set and test set
-        self.inputs_train, self.inputs_test, self.labels_train, self.labels_test = train_test_split(self.inputs, self.labels, test_size=test_amount)
+        # self.inputs_train, self.inputs_test, self.labels_train, self.labels_test = train_test_split(self.inputs, self.labels, test_size=test_amount)
         self.learning_rate = learning_rate
         self.iterations = itertions
 
@@ -27,14 +29,16 @@ class LogisticRegressionAlgorithm(object):
         scaled_inputs = np.true_divide(inputs, 255 * 0.99) + 0.01
         return scaled_inputs
 
-    def plot_image(self, image_number, inputs):
+    # def plot_image(self, image_number, inputs):
+    def plot_image(self, inputs):
         """Plots one image out of the images
         This function is just for debugging or visualizing, it is not used in calculations"""
         image = np.zeros((28, 28))
         for i in range(0, 28):
             for j in range(0, 28):
                 pix = 28 * i + j
-                image[i, j] = inputs[image_number, pix]
+                # image[i, j] = inputs[image_number, pix]
+                image[i, j] = inputs[pix]
         plt.imshow(image, cmap='gray')
         plt.show()
 
@@ -442,10 +446,10 @@ class LogisticRegressionAlgorithm(object):
 def import_mnist():
     mnist_alternative_url = r"https://github.com/amplab/datascience-sp14/raw/master/lab7/mldata/mnist-original.mat"
     mnist_path = "./mnist-original.mat"
-    response = urllib.request.urlopen(mnist_alternative_url)
-    with open(mnist_path, "wb") as f:
-        content = response.read()
-        f.write(content)
+    # response = urllib.request.urlopen(mnist_alternative_url)
+    # with open(mnist_path, "wb") as f:
+    #     content = response.read()
+    #     f.write(content)
 
     mnist_raw = loadmat(mnist_path)
     mnist = {
@@ -491,4 +495,4 @@ def main(save_weights=False, use_weights_from_file=False):
 
 if __name__ == '__main__':
     # Entry point of the script
-    main(save_weights=False, use_weights_from_file=False)
+    main(save_weights=False, use_weights_from_file=True)
