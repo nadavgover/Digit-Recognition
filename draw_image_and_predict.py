@@ -1,7 +1,6 @@
 import part_b
 from tkinter import *
 import numpy as np
-from matplotlib import pyplot as plt
 import random
 
 class Paint(object):
@@ -24,14 +23,20 @@ class Paint(object):
         self.reset_button = Button(self.root, text="reset", command=self.erase)
         self.reset_button.grid(row=1, column=4)
 
+        self.instructions = Label(self.root, text="Draw a digit (0-9) and press go")
+        self.instructions.grid(row=1, column=2)
+
+        self.prediction = StringVar()  # when this variable is changed the prediction label is automatically changed is well
+        self.prediction_label = Label(self.root, text="", textvariable=self.prediction, justify="center")
+        self.prediction_label.grid(row=2, column=2)
+
         self.old_x = None
         self.old_y = None
 
         self.line_width = 10
-        # self.line_width = 1
         self.color = "black"
 
-        self.c.bind('<B1-Motion>', self.paint) # when you press the mouse this happens
+        self.c.bind('<B1-Motion>', self.paint) # when you press the mouse on the canvas this happens
         self.c.bind('<ButtonRelease-1>', self.reset)  # when you release the mouse this happens
 
         # run the app
@@ -54,27 +59,27 @@ class Paint(object):
 
     def go(self):
         """Predicts the number that has been drawn using the softmax regression"""
+        # We deliberately made the canvas 10 times bigger, so now we scale it down
         self.c.scale(ALL, 0, 0, 0.1, 0.1) # parameters: tagOrId xOrigin yOrigin xScale yScale
-        pixels = self.c.find_all()
-        coords = [self.c.coords(pixel) for pixel in pixels]
-        prediction, confidence = predict(coords)
-        print(prediction, confidence)
-        self.c.scale(ALL, 0, 0, 10, 10)
+        pixels = self.c.find_all()  # get all he pixels
+        coords = [self.c.coords(pixel) for pixel in pixels]  # get the coordinates of each pixel
+        prediction, confidence = predict(coords)  # use the machine learning model to predict what number is the drawing
+        text = "The number is: {}".format(prediction)
+        self.prediction.set(text)  # update the prediction label
+        self.c.scale(ALL, 0, 0, 10, 10)  # scale back so the change won't be visible
 
     def erase(self):
         """Erases everything from the canvas"""
         self.c.delete(ALL)
+        self.prediction.set("")  # reset the prediction label
 
 def predict(coords):
     """Predicts what digit was drawn on the canvas
     Returns a string representing the digit"""
     image = turn_coords_to_image(coords)
     lra = part_b.LogisticRegressionAlgorithm(inputs=image, labels=None)
-    # lra.plot_image(inputs=image)
     weights = lra.get_weights_from_file(path=r"./multiclass_weights_part_b_10000_iterations.npy")
     prediction = lra.predict_multiclass(weights=weights, inputs=image)  # shape (10, 1)
-    # np.set_printoptions(precision=3)
-    # print(prediction)
     prediction_class = lra.classify_multiclass(predictions=prediction)
     confidence = prediction[prediction_class]
     return prediction_class, confidence
